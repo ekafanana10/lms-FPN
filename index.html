@@ -1,321 +1,679 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LMS Ujian Online - System Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 font-sans min-h-screen text-gray-800">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-  <!-- Navbar -->
-  <nav id="navbar" class="bg-blue-600 text-white p-4 shadow-md hidden">
-    <div class="max-w-5xl mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <h1 class="text-xl font-bold">LMS Ujian</h1>
-        <span id="user-badge" class="bg-blue-800 text-xs px-2 py-1 rounded capitalize font-semibold"></span>
-      </div>
-      <div class="space-x-4 flex items-center">
-        <button onclick="showPage('dashboard')" class="hover:underline">Dashboard</button>
-        <button id="nav-buat-soal" onclick="showPage('buat-soal')" class="hover:underline hidden">Buat Soal (Guru)</button>
-        <button id="nav-mulai-ujian" onclick="showPage('mulai-ujian')" class="bg-white text-blue-600 px-3 py-1 rounded font-semibold hover:bg-gray-100 hidden">Ujian Siswa</button>
-        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold">Logout</button>
-      </div>
-    </div>
-  </nav>
+#pvn-root {
+  --navy: #16233F;
+  --navy-light: #223357;
+  --gold: #C9974A;
+  --gold-light: #E4C07E;
+  --cream: #F7F4EC;
+  --paper: #FFFFFF;
+  --slate: #3A3F4B;
+  --slate-soft: #767c8c;
+  --green: #2F7D5C;
+  --red: #B94A3C;
+  --line: #E4E0D4;
+  font-family: 'Inter', sans-serif;
+  color: var(--slate);
+  background: var(--cream);
+  min-height: 640px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+#pvn-root * { box-sizing: border-box; }
+#pvn-root .mono { font-family: 'IBM Plex Mono', monospace; }
+#pvn-root .display { font-family: 'Fraunces', serif; }
 
-  <div class="max-w-5xl mx-auto p-6">
+#pvn-root button {
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: transform .12s ease, box-shadow .12s ease, background .15s ease;
+}
+#pvn-root button:active { transform: translateY(1px); }
+#pvn-root button:focus-visible, #pvn-root input:focus-visible, #pvn-root select:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 2px;
+}
+#pvn-root .btn-primary {
+  background: var(--navy); color: var(--gold-light); padding: 13px 22px; font-size: 14.5px;
+}
+#pvn-root .btn-primary:hover { background: var(--navy-light); }
+#pvn-root .btn-ghost {
+  background: transparent; color: var(--navy); padding: 10px 16px; border: 1.5px solid var(--line); font-size: 13.5px;
+}
+#pvn-root .btn-ghost:hover { border-color: var(--navy); }
+#pvn-root .btn-danger { background: #fbeae6; color: var(--red); padding: 8px 14px; font-size: 13px; }
+#pvn-root .btn-danger:hover { background: #f6d9d2; }
+#pvn-root .btn-block { width: 100%; }
 
-    <!-- PAGE: LOGIN -->
-    <div id="page-login" class="page max-w-md mx-auto mt-12 bg-white p-8 rounded-lg shadow-md border">
-      <h2 class="text-2xl font-bold text-center mb-2">Login LMS Ujian</h2>
-      <p class="text-gray-500 text-center text-sm mb-6">Silakan masuk menggunakan akun Anda</p>
-      
-      <form id="form-login" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Username</label>
-          <input type="text" id="login-username" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan username" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="login-password" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan password" required>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Login Sebagai</label>
-          <select id="login-role" class="w-full p-2 border rounded bg-white">
-            <option value="siswa">Siswa</option>
-            <option value="guru">Guru / Admin</option>
-          </select>
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Masuk</button>
-      </form>
+#pvn-root input, #pvn-root select, #pvn-root textarea {
+  font-family: 'Inter', sans-serif; font-size: 14px; padding: 11px 13px;
+  border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--slate); width: 100%;
+}
+#pvn-root label { font-size: 12.5px; font-weight: 600; color: var(--slate-soft); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
 
-      <div class="mt-6 p-4 bg-gray-50 rounded text-xs text-gray-600 border space-y-1">
-        <p class="font-bold">Akun Percobaan Default:</p>
-        <p>• <strong>Siswa:</strong> username: <code class="bg-gray-200 px-1">siswa</code> | pass: <code class="bg-gray-200 px-1">123</code></p>
-        <p>• <strong>Guru:</strong> username: <code class="bg-gray-200 px-1">guru</code> | pass: <code class="bg-gray-200 px-1">123</code></p>
-      </div>
-    </div>
+/* ---- Login/Register: exam ticket motif ---- */
+#pvn-root .auth-wrap {
+  min-height: 640px; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 15% 15%, #1e2f52 0%, var(--navy) 55%, #101a30 100%);
+  padding: 32px 16px;
+}
+#pvn-root .ticket {
+  display: flex; width: 100%; max-width: 620px; background: var(--paper); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+}
+#pvn-root .ticket-stub {
+  width: 108px; flex-shrink: 0; background: var(--navy); position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  border-right: 2px dashed rgba(228,192,126,.4);
+}
+#pvn-root .ticket-stub::before, #pvn-root .ticket-stub::after {
+  content: ""; position: absolute; width: 22px; height: 22px; background: var(--cream); border-radius: 50%;
+  right: -11px;
+}
+#pvn-root .ticket-stub::before { top: -11px; }
+#pvn-root .ticket-stub::after { bottom: -11px; }
+#pvn-root .seal {
+  width: 58px; height: 58px; border-radius: 50%; border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center; color: var(--gold-light);
+  font-size: 15px; font-weight: 700; letter-spacing: .04em;
+}
+#pvn-root .ticket-stub .vert {
+  writing-mode: vertical-rl; color: rgba(228,192,126,.65); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+}
+#pvn-root .ticket-body { flex: 1; padding: 40px 38px; }
+#pvn-root .eyebrow { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+#pvn-root .auth-title { font-size: 27px; font-weight: 700; color: var(--navy); margin: 0 0 6px; }
+#pvn-root .auth-sub { font-size: 13.5px; color: var(--slate-soft); margin: 0 0 26px; line-height: 1.5; }
+#pvn-root .field { margin-bottom: 15px; }
+#pvn-root .auth-switch { margin-top: 18px; font-size: 13px; color: var(--slate-soft); text-align: center; }
+#pvn-root .auth-switch a { color: var(--navy); font-weight: 600; cursor: pointer; text-decoration: underline; }
+#pvn-root .banner { padding: 10px 13px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+#pvn-root .banner-err { background: #fbeae6; color: var(--red); }
+#pvn-root .banner-ok { background: #e7f3ec; color: var(--green); }
+#pvn-root .hint-box { margin-top: 20px; padding: 12px 14px; background: var(--cream); border-radius: 8px; font-size: 12px; color: var(--slate-soft); line-height: 1.6; }
 
-    <!-- PAGE: DASHBOARD -->
-    <div id="page-dashboard" class="page hidden">
-      <h2 class="text-2xl font-bold mb-1">Selamat Datang, <span id="dash-user-name" class="text-blue-600"></span>!</h2>
-      <p class="text-gray-600 mb-6">Role Anda: <strong id="dash-user-role" class="capitalize"></strong></p>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-          <h3 class="text-lg font-semibold mb-2">Total Soal Tersimpan</h3>
-          <p id="total-soal" class="text-4xl font-bold text-blue-600">0</p>
-          <p class="text-sm text-gray-500 mt-2">Soal aktif dalam sistem ujian.</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-          <h3 class="text-lg font-semibold mb-2">Status Akun</h3>
-          <p class="text-lg font-semibold text-green-600">Sesi Login Aktif</p>
-          <p class="text-sm text-gray-500 mt-2">Akses menu disesuaikan dengan peran pengguna.</p>
-        </div>
-      </div>
-    </div>
+/* ---- App shell ---- */
+#pvn-root .shell { display: flex; min-height: 640px; }
+#pvn-root .sidebar {
+  width: 224px; flex-shrink: 0; background: var(--navy); color: var(--cream); padding: 26px 18px; display: flex; flex-direction: column;
+}
+#pvn-root .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 0 6px; }
+#pvn-root .brand .seal { width: 36px; height: 36px; font-size: 10px; }
+#pvn-root .brand-text { font-size: 14px; font-weight: 700; line-height: 1.2; }
+#pvn-root .brand-text span { display: block; font-size: 10px; color: var(--gold-light); font-weight: 500; letter-spacing: .08em; }
+#pvn-root .nav-item {
+  padding: 11px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: rgba(247,244,236,.72);
+  cursor: pointer; margin-bottom: 3px; display: flex; align-items: center; gap: 9px;
+}
+#pvn-root .nav-item:hover { background: rgba(255,255,255,.06); color: var(--cream); }
+#pvn-root .nav-item.active { background: rgba(201,151,74,.16); color: var(--gold-light); }
+#pvn-root .sidebar-foot { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.1); }
+#pvn-root .who { font-size: 12.5px; color: rgba(247,244,236,.55); margin-bottom: 10px; }
+#pvn-root .who b { color: var(--cream); display: block; font-size: 13.5px; margin-bottom: 2px; }
+#pvn-root .main { flex: 1; padding: 32px 36px; overflow-y: auto; max-height: 640px; }
+#pvn-root .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+#pvn-root .page-title { font-size: 22px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+#pvn-root .page-sub { font-size: 13px; color: var(--slate-soft); margin: 0; }
 
-    <!-- PAGE: BUAT SOAL (GURU) -->
-    <div id="page-buat-soal" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">Tambah Soal Baru</h2>
-      <form id="form-soal" class="bg-white p-6 rounded-lg shadow space-y-4">
-        <div>
-          <label class="block font-medium mb-1">Pertanyaan / Soal Ujian</label>
-          <textarea id="pertanyaan" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" rows="3" required></textarea>
-        </div>
+#pvn-root .card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+#pvn-root .card + .card { margin-top: 14px; }
+#pvn-root .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+#pvn-root .exam-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+#pvn-root .exam-name { font-weight: 700; color: var(--navy); font-size: 15.5px; margin: 0 0 3px; }
+#pvn-root .exam-meta { font-size: 12.5px; color: var(--slate-soft); }
+#pvn-root .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+#pvn-root .badge-gold { background: #f6ead2; color: #92671f; }
+#pvn-root .badge-green { background: #e2f1ea; color: var(--green); }
+#pvn-root .badge-red { background: #fbeae6; color: var(--red); }
+#pvn-root .empty { text-align: center; padding: 50px 20px; color: var(--slate-soft); }
+#pvn-root .empty .display { font-size: 17px; color: var(--navy); margin-bottom: 6px; }
+#pvn-root .row-actions { display: flex; gap: 8px; }
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium">Pilihan A</label>
-            <input type="text" id="opt-a" class="w-full p-2 border rounded" required>
+#pvn-root .q-card { border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; background: var(--paper); margin-bottom: 14px; }
+#pvn-root .q-num { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+#pvn-root .q-text { font-size: 15.5px; font-weight: 600; color: var(--navy); margin: 0 0 14px; line-height: 1.5; }
+#pvn-root .opt {
+  display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: 8px;
+  margin-bottom: 8px; cursor: pointer; font-size: 14px;
+}
+#pvn-root .opt:hover { border-color: var(--gold); }
+#pvn-root .opt.sel { border-color: var(--navy); background: #f1eee3; }
+#pvn-root .opt .dot { width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid var(--slate-soft); flex-shrink: 0; position: relative; }
+#pvn-root .opt.sel .dot { border-color: var(--navy); }
+#pvn-root .opt.sel .dot::after { content:""; position:absolute; inset: 3px; border-radius: 50%; background: var(--navy); }
+#pvn-root .opt.correct { border-color: var(--green); background: #e7f3ec; }
+#pvn-root .opt.wrong { border-color: var(--red); background: #fbeae6; }
+
+#pvn-root .timer-bar {
+  position: sticky; top: 0; z-index: 5; background: var(--navy); color: var(--cream); border-radius: 10px;
+  padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+}
+#pvn-root .timer-num { font-size: 17px; font-weight: 600; color: var(--gold-light); }
+#pvn-root .progress-track { flex: 1; height: 5px; background: rgba(255,255,255,.15); border-radius: 3px; margin: 0 18px; overflow: hidden; }
+#pvn-root .progress-fill { height: 100%; background: var(--gold); border-radius: 3px; }
+
+#pvn-root .score-hero { text-align: center; padding: 38px 20px 26px; }
+#pvn-root .score-num { font-family: 'Fraunces', serif; font-size: 58px; font-weight: 700; color: var(--navy); line-height: 1; }
+#pvn-root .score-of { font-size: 13.5px; color: var(--slate-soft); margin-top: 6px; }
+
+#pvn-root table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+#pvn-root th { text-align: left; padding: 9px 10px; color: var(--slate-soft); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; border-bottom: 1.5px solid var(--line); }
+#pvn-root td { padding: 11px 10px; border-bottom: 1px solid var(--line); }
+
+@media (max-width: 700px) {
+  #pvn-root .shell { flex-direction: column; }
+  #pvn-root .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 14px 16px; }
+  #pvn-root .brand { margin-bottom: 0; }
+  #pvn-root .nav-item span.label { display: none; }
+  #pvn-root .sidebar-foot { display: none; }
+  #pvn-root .main { padding: 20px; }
+  #pvn-root .ticket { flex-direction: column; }
+  #pvn-root .ticket-stub { width: 100%; flex-direction: row; padding: 16px; border-right: none; border-bottom: 2px dashed rgba(228,192,126,.4); }
+  #pvn-root .ticket-stub .vert { writing-mode: horizontal-tb; }
+  #pvn-root .grid-2 { grid-template-columns: 1fr; }
+}
+</style>
+
+<div id="pvn-root"></div>
+
+<script>
+(function(){
+  const root = document.getElementById('pvn-root');
+
+  const state = {
+    user: null,
+    view: 'login',
+    authError: '',
+    authNotice: '',
+    exams: [],
+    examEditId: null,
+    examTakeId: null,
+    answers: {},
+    timeLeft: 0,
+    timerHandle: null,
+    lastResult: null,
+    resultsCache: {},
+    loading: false,
+  };
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+  async function sGet(key, shared) {
+    try { const r = await window.storage.get(key, !!shared); return r ? JSON.parse(r.value) : null; }
+    catch(e) { return null; }
+  }
+  async function sSet(key, val, shared) {
+    try { await window.storage.set(key, JSON.stringify(val), !!shared); return true; }
+    catch(e) { return false; }
+  }
+  async function sDelete(key, shared) {
+    try { await window.storage.delete(key, !!shared); } catch(e) {}
+  }
+
+  async function seedAdmin() {
+    const existing = await sGet('user:admin', true);
+    if (!existing) {
+      await sSet('user:admin', { username: 'admin', password: 'admin123', name: 'Administrator', role: 'admin' }, true);
+    }
+  }
+
+  async function loadExams() {
+    const list = await sGet('exams:list', true) || [];
+    const exams = [];
+    for (const id of list) {
+      const ex = await sGet('exam:' + id, true);
+      if (ex) exams.push(ex);
+    }
+    exams.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    state.exams = exams;
+  }
+
+  async function saveExamList(ids) { await sSet('exams:list', ids, true); }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function fmtTime(sec) {
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = Math.floor(sec%60).toString().padStart(2,'0');
+    return m + ':' + s;
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '-';
+    const d = new Date(ts);
+    return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) + ' ' + d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function render() { root.innerHTML = views[state.view] ? views[state.view]() : ''; bindEvents(); }
+
+  // ---------------- VIEWS ----------------
+  const views = {
+    login: () => `
+      <div class="auth-wrap">
+        <div class="ticket">
+          <div class="ticket-stub">
+            <div class="seal">PVN</div>
+            <div class="vert">TIKET UJIAN</div>
           </div>
-          <div>
-            <label class="block text-sm font-medium">Pilihan B</label>
-            <input type="text" id="opt-b" class="w-full p-2 border rounded" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium">Pilihan C</label>
-            <input type="text" id="opt-c" class="w-full p-2 border rounded" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium">Pilihan D</label>
-            <input type="text" id="opt-d" class="w-full p-2 border rounded" required>
+          <div class="ticket-body">
+            <div class="eyebrow">LMS Ujian PVN</div>
+            <h1 class="auth-title">Masuk ke Akun</h1>
+            <p class="auth-sub">Masukkan kredensial untuk mengakses ruang ujian atau panel admin.</p>
+            ${state.authError ? `<div class="banner banner-err">${escapeHtml(state.authError)}</div>` : ''}
+            ${state.authNotice ? `<div class="banner banner-ok">${escapeHtml(state.authNotice)}</div>` : ''}
+            <form id="login-form">
+              <div class="field"><label>Username</label><input name="username" autocomplete="username" required /></div>
+              <div class="field"><label>Kata Sandi</label><input name="password" type="password" autocomplete="current-password" required /></div>
+              <button type="submit" class="btn-primary btn-block">Masuk</button>
+            </form>
+            <div class="auth-switch">Belum punya akun peserta? <a id="go-register">Daftar di sini</a></div>
+            <div class="hint-box">Akun admin awal &mdash; username: <b>admin</b>, sandi: <b>admin123</b>. Peserta baru dapat mendaftar sendiri.</div>
           </div>
         </div>
+      </div>`,
 
-        <div>
-          <label class="block font-medium mb-1">Kunci Jawaban Benar</label>
-          <select id="kunci-jawaban" class="w-full p-2 border rounded">
-            <option value="A">Pilihan A</option>
-            <option value="B">Pilihan B</option>
-            <option value="C">Pilihan C</option>
-            <option value="D">Pilihan D</option>
-          </select>
+    register: () => `
+      <div class="auth-wrap">
+        <div class="ticket">
+          <div class="ticket-stub">
+            <div class="seal">PVN</div>
+            <div class="vert">PENDAFTARAN</div>
+          </div>
+          <div class="ticket-body">
+            <div class="eyebrow">Peserta Baru</div>
+            <h1 class="auth-title">Buat Akun Peserta</h1>
+            <p class="auth-sub">Daftar untuk mengikuti ujian PVN yang tersedia.</p>
+            ${state.authError ? `<div class="banner banner-err">${escapeHtml(state.authError)}</div>` : ''}
+            <form id="register-form">
+              <div class="field"><label>Nama Lengkap</label><input name="name" required /></div>
+              <div class="field"><label>Username</label><input name="username" required /></div>
+              <div class="field"><label>Kata Sandi</label><input name="password" type="password" required minlength="4" /></div>
+              <button type="submit" class="btn-primary btn-block">Daftar</button>
+            </form>
+            <div class="auth-switch">Sudah punya akun? <a id="go-login">Masuk</a></div>
+          </div>
         </div>
+      </div>`,
 
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Simpan Soal</button>
-      </form>
-    </div>
+    admin: () => shell('admin', 'dashboard', adminDashboardContent()),
+    adminExam: () => shell('admin', 'dashboard', adminExamEditorContent()),
+    peserta: () => shell('peserta', 'dashboard', pesertaDashboardContent()),
+    pesertaResults: () => shell('peserta', 'results', pesertaResultsContent()),
+    take: () => shell('peserta', 'dashboard', takeExamContent(), true),
+    result: () => shell('peserta', 'dashboard', resultContent(), true),
+  };
 
-    <!-- PAGE: UJIAN (SISWA) -->
-    <div id="page-mulai-ujian" class="page hidden">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Lembar Ujian</h2>
-        <div class="bg-red-100 text-red-600 px-4 py-2 rounded font-bold border border-red-300">
-          Waktu: <span id="timer">05:00</span>
+  function shell(role, activeNav, content, bare) {
+    const nav = role === 'admin'
+      ? [{k:'dashboard', label:'Kelola Ujian', icon:'&#9776;'}]
+      : [{k:'dashboard', label:'Ujian Tersedia', icon:'&#9776;'}, {k:'results', label:'Riwayat Nilai', icon:'&#9733;'}];
+    return `
+      <div class="shell">
+        <div class="sidebar">
+          <div class="brand"><div class="seal">PVN</div><div class="brand-text">LMS Ujian<span>Sistem PVN</span></div></div>
+          ${bare ? '' : nav.map(n => `<div class="nav-item ${n.k===activeNav?'active':''}" data-nav="${n.k}"><span>${n.icon}</span><span class="label">${n.label}</span></div>`).join('')}
+          <div class="sidebar-foot">
+            <div class="who"><b>${escapeHtml(state.user.name)}</b>${role === 'admin' ? 'Administrator' : 'Peserta'}</div>
+            <button class="btn-ghost btn-block" id="logout-btn">Keluar</button>
+          </div>
         </div>
+        <div class="main">${content}</div>
+      </div>`;
+  }
+
+  function adminDashboardContent() {
+    if (!state.exams.length) {
+      return `
+        <div class="page-head"><div><h1 class="page-title">Kelola Ujian</h1><p class="page-sub">Buat dan atur ujian pilihan ganda untuk peserta.</p></div>
+        <button class="btn-primary" id="new-exam-btn">+ Ujian Baru</button></div>
+        <div class="card empty"><div class="display">Belum ada ujian</div><p>Mulai dengan membuat ujian pertama.</p></div>`;
+    }
+    return `
+      <div class="page-head"><div><h1 class="page-title">Kelola Ujian</h1><p class="page-sub">${state.exams.length} ujian tersedia.</p></div>
+      <button class="btn-primary" id="new-exam-btn">+ Ujian Baru</button></div>
+      ${state.exams.map(ex => `
+        <div class="card exam-row">
+          <div>
+            <p class="exam-name">${escapeHtml(ex.title)}</p>
+            <p class="exam-meta">${(ex.questions||[]).length} soal &middot; ${ex.duration} menit &middot; dibuat ${fmtDate(ex.createdAt)}</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn-ghost" data-edit-exam="${ex.id}">Kelola Soal</button>
+            <button class="btn-ghost" data-view-results="${ex.id}">Lihat Nilai</button>
+            <button class="btn-danger" data-delete-exam="${ex.id}">Hapus</button>
+          </div>
+        </div>
+        <div id="results-panel-${ex.id}"></div>
+      `).join('')}
+      <div id="new-exam-modal-slot"></div>`;
+  }
+
+  function adminExamEditorContent() {
+    const ex = state.exams.find(e => e.id === state.examEditId);
+    if (!ex) return `<div class="card empty">Ujian tidak ditemukan.</div>`;
+    return `
+      <div class="page-head">
+        <div><h1 class="page-title">${escapeHtml(ex.title)}</h1><p class="page-sub">${(ex.questions||[]).length} soal &middot; ${ex.duration} menit</p></div>
+        <button class="btn-ghost" id="back-to-dash">&larr; Kembali</button>
       </div>
-
-      <div id="kontainer-soal" class="space-y-6"></div>
-
-      <div class="mt-6">
-        <button onclick="submitUjian()" class="bg-green-600 text-white px-6 py-2 rounded font-bold text-lg hover:bg-green-700">Kirim & Selesaikan Ujian</button>
+      <div class="card">
+        <label>Tambah Soal Pilihan Ganda</label>
+        <form id="add-question-form">
+          <div class="field"><textarea name="text" rows="2" placeholder="Tulis pertanyaan..." required></textarea></div>
+          <div class="grid-2">
+            <div class="field"><input name="opt0" placeholder="Pilihan A" required /></div>
+            <div class="field"><input name="opt1" placeholder="Pilihan B" required /></div>
+            <div class="field"><input name="opt2" placeholder="Pilihan C" required /></div>
+            <div class="field"><input name="opt3" placeholder="Pilihan D" required /></div>
+          </div>
+          <div class="field">
+            <label>Jawaban Benar</label>
+            <select name="correct">
+              <option value="0">Pilihan A</option><option value="1">Pilihan B</option>
+              <option value="2">Pilihan C</option><option value="3">Pilihan D</option>
+            </select>
+          </div>
+          <button class="btn-primary" type="submit">Tambah Soal</button>
+        </form>
       </div>
-    </div>
+      ${(ex.questions||[]).map((q,i) => `
+        <div class="card">
+          <div class="q-num">Soal ${i+1}</div>
+          <p class="q-text" style="margin-bottom:10px">${escapeHtml(q.text)}</p>
+          ${q.options.map((o,oi) => `<div class="opt ${oi===q.correct?'correct':''}" style="cursor:default"><div class="dot"></div>${escapeHtml(o)}</div>`).join('')}
+          <div class="row-actions" style="margin-top:8px"><button class="btn-danger" data-delete-q="${q.id}">Hapus Soal</button></div>
+        </div>`).join('')}
+      ${!(ex.questions||[]).length ? `<div class="card empty"><p>Belum ada soal. Tambahkan soal di atas.</p></div>` : ''}`;
+  }
 
-    <!-- PAGE: HASIL UJIAN -->
-    <div id="page-hasil" class="page hidden text-center">
-      <div class="bg-white p-8 rounded-lg shadow max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-2">Hasil Ujian</h2>
-        <p class="text-gray-600 mb-6">Nilai Anda telah dikalkulasi:</p>
-        <div id="skor-akhir" class="text-6xl font-extrabold text-blue-600 mb-4">0</div>
-        <p id="detail-jawaban" class="text-sm text-gray-500 mb-6"></p>
-        <button onclick="showPage('dashboard')" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Kembali ke Dashboard</button>
+  function pesertaDashboardContent() {
+    if (!state.exams.length) {
+      return `<div class="page-head"><div><h1 class="page-title">Ujian Tersedia</h1><p class="page-sub">Belum ada ujian yang dibuat admin.</p></div></div>
+      <div class="card empty"><div class="display">Belum ada ujian</div><p>Silakan cek kembali nanti.</p></div>`;
+    }
+    return `
+      <div class="page-head"><div><h1 class="page-title">Ujian Tersedia</h1><p class="page-sub">Pilih ujian untuk mulai mengerjakan.</p></div></div>
+      ${state.exams.map(ex => `
+        <div class="card exam-row">
+          <div>
+            <p class="exam-name">${escapeHtml(ex.title)}</p>
+            <p class="exam-meta">${escapeHtml(ex.description||'')}${ex.description?' &middot; ':''}${(ex.questions||[]).length} soal &middot; ${ex.duration} menit</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn-primary" data-take-exam="${ex.id}" ${!(ex.questions||[]).length ? 'disabled' : ''}>Mulai Ujian</button>
+          </div>
+        </div>`).join('')}`;
+  }
+
+  async function pesertaResultsContentAsync() {
+    const list = await sGet('results:index', true) || [];
+    const mine = list.filter(r => r.username === state.user.username).sort((a,b) => b.submittedAt - a.submittedAt);
+    return mine;
+  }
+
+  function pesertaResultsContent() {
+    const mine = state.resultsCache.mine || [];
+    if (!mine.length) {
+      return `<div class="page-head"><div><h1 class="page-title">Riwayat Nilai</h1><p class="page-sub">Hasil ujian yang sudah dikerjakan.</p></div></div>
+      <div class="card empty"><div class="display">Belum ada riwayat</div><p>Kerjakan ujian untuk melihat nilai di sini.</p></div>`;
+    }
+    return `
+      <div class="page-head"><div><h1 class="page-title">Riwayat Nilai</h1><p class="page-sub">${mine.length} ujian telah dikerjakan.</p></div></div>
+      <div class="card"><table><thead><tr><th>Ujian</th><th>Nilai</th><th>Tanggal</th></tr></thead><tbody>
+        ${mine.map(r => `<tr><td>${escapeHtml(r.examTitle)}</td><td><span class="badge ${r.score>=70?'badge-green':'badge-red'}">${r.score}/100</span></td><td>${fmtDate(r.submittedAt)}</td></tr>`).join('')}
+      </tbody></table></div>`;
+  }
+
+  function takeExamContent() {
+    const ex = state.exams.find(e => e.id === state.examTakeId);
+    if (!ex) return `<div class="card empty">Ujian tidak ditemukan.</div>`;
+    const total = (ex.questions||[]).length;
+    const answered = Object.keys(state.answers).length;
+    return `
+      <div class="timer-bar">
+        <span class="mono">${answered}/${total} terjawab</span>
+        <div class="progress-track"><div class="progress-fill" style="width:${total?(answered/total*100):0}%"></div></div>
+        <span class="timer-num mono" id="timer-display">${fmtTime(state.timeLeft)}</span>
       </div>
-    </div>
+      <div class="page-head"><div><h1 class="page-title">${escapeHtml(ex.title)}</h1><p class="page-sub">Pilih satu jawaban untuk setiap soal, lalu kumpulkan sebelum waktu habis.</p></div></div>
+      ${(ex.questions||[]).map((q,i) => `
+        <div class="q-card">
+          <div class="q-num">Soal ${i+1} dari ${total}</div>
+          <p class="q-text">${escapeHtml(q.text)}</p>
+          ${q.options.map((o,oi) => `
+            <div class="opt ${state.answers[q.id]===oi?'sel':''}" data-answer-q="${q.id}" data-answer-i="${oi}">
+              <div class="dot"></div>${escapeHtml(o)}
+            </div>`).join('')}
+        </div>`).join('')}
+      <button class="btn-primary btn-block" id="submit-exam-btn" style="padding:15px;font-size:15px;margin-top:6px">Kumpulkan Ujian</button>`;
+  }
 
-  </div>
+  function resultContent() {
+    const r = state.lastResult;
+    if (!r) return `<div class="card empty">Tidak ada hasil.</div>`;
+    return `
+      <div class="card score-hero">
+        <div class="eyebrow" style="text-align:center">${escapeHtml(r.examTitle)}</div>
+        <div class="score-num">${r.score}</div>
+        <div class="score-of">dari 100 &middot; ${r.correct} benar dari ${r.total} soal</div>
+        <div style="margin-top:18px"><span class="badge ${r.score>=70?'badge-green':'badge-red'}">${r.score>=70?'LULUS':'BELUM LULUS'}</span></div>
+      </div>
+      <button class="btn-primary btn-block" id="back-to-list-btn">Kembali ke Daftar Ujian</button>`;
+  }
 
-  <script>
-    // State Aplikasi
-    let currentUser = JSON.parse(localStorage.getItem('lms_current_user')) || null;
-    let daftarSoal = JSON.parse(localStorage.getItem('lms_soal')) || [
-      {
-        id: 1,
-        pertanyaan: "Apa kepanjangan dari HTML?",
-        pilihan: { A: "HyperText Markup Language", B: "HighText Machine Language", C: "Hyperlink Text Mode Language", D: "Home Tool Markup Language" },
-        kunci: "A"
-      }
-    ];
+  // ---------------- EVENTS ----------------
+  function bindEvents() {
+    const $ = sel => root.querySelector(sel);
+    const $$ = sel => root.querySelectorAll(sel);
 
-    let timerInterval = null;
-
-    // Login System
-    document.getElementById('form-login').addEventListener('submit', function(e) {
+    const loginForm = $('#login-form');
+    if (loginForm) loginForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const usernameInput = document.getElementById('login-username').value;
-      const passwordInput = document.getElementById('login-password').value;
-      const roleInput = document.getElementById('login-role').value;
-
-      // Validasi sederhana kredensial
-      if (roleInput === 'siswa' && usernameInput === 'siswa' && passwordInput === '123') {
-        currentUser = { username: 'siswa', role: 'siswa', name: 'Siswa Percobaan' };
-      } else if (roleInput === 'guru' && usernameInput === 'guru' && passwordInput === '123') {
-        currentUser = { username: 'guru', role: 'guru', name: 'Pak Guru' };
-      } else {
-        alert('Username atau password salah! (Gunakan default: siswa/123 atau guru/123)');
-        return;
+      const fd = new FormData(loginForm);
+      const username = fd.get('username').trim();
+      const password = fd.get('password');
+      const u = await sGet('user:' + username, true);
+      if (!u || u.password !== password) {
+        state.authError = 'Username atau kata sandi salah.';
+        render(); return;
       }
-
-      localStorage.setItem('lms_current_user', JSON.stringify(currentUser));
-      initApp();
-      showPage('dashboard');
+      state.authError = ''; state.authNotice = '';
+      state.user = u;
+      await loadExams();
+      state.view = u.role === 'admin' ? 'admin' : 'peserta';
+      render();
     });
 
-    function logout() {
-      localStorage.removeItem('lms_current_user');
-      currentUser = null;
-      clearInterval(timerInterval);
-      initApp();
-    }
+    const goReg = $('#go-register');
+    if (goReg) goReg.addEventListener('click', () => { state.authError=''; state.view = 'register'; render(); });
+    const goLogin = $('#go-login');
+    if (goLogin) goLogin.addEventListener('click', () => { state.authError=''; state.view = 'login'; render(); });
 
-    // Inisialisasi UI Berdasarkan Sesi Login
-    function initApp() {
-      const navbar = document.getElementById('navbar');
-      if (!currentUser) {
-        navbar.classList.add('hidden');
-        showPage('login');
-      } else {
-        navbar.classList.remove('hidden');
-        document.getElementById('user-badge').innerText = currentUser.role;
-        document.getElementById('dash-user-name').innerText = currentUser.name;
-        document.getElementById('dash-user-role').innerText = currentUser.role;
-
-        // Navigasi Berdasarkan Role
-        if (currentUser.role === 'guru') {
-          document.getElementById('nav-buat-soal').classList.remove('hidden');
-          document.getElementById('nav-mulai-ujian').classList.add('hidden');
-        } else {
-          document.getElementById('nav-buat-soal').classList.add('hidden');
-          document.getElementById('nav-mulai-ujian').classList.remove('hidden');
-        }
-
-        showPage('dashboard');
-      }
-    }
-
-    // Navigasi Halaman
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-      document.getElementById(`page-${pageId}`).classList.remove('hidden');
-
-      if (pageId === 'dashboard') updateDashboard();
-      if (pageId === 'mulai-ujian') renderUjian();
-    }
-
-    function updateDashboard() {
-      document.getElementById('total-soal').innerText = daftarSoal.length;
-    }
-
-    // Buat Soal Baru (Guru)
-    document.getElementById('form-soal').addEventListener('submit', function(e) {
+    const regForm = $('#register-form');
+    if (regForm) regForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const baru = {
-        id: Date.now(),
-        pertanyaan: document.getElementById('pertanyaan').value,
-        pilihan: {
-          A: document.getElementById('opt-a').value,
-          B: document.getElementById('opt-b').value,
-          C: document.getElementById('opt-c').value,
-          D: document.getElementById('opt-d').value
-        },
-        kunci: document.getElementById('kunci-jawaban').value
+      const fd = new FormData(regForm);
+      const username = fd.get('username').trim();
+      const name = fd.get('name').trim();
+      const password = fd.get('password');
+      if (!username || !name || password.length < 4) return;
+      const exists = await sGet('user:' + username, true);
+      if (exists) { state.authError = 'Username sudah digunakan.'; render(); return; }
+      await sSet('user:' + username, { username, password, name, role: 'peserta' }, true);
+      state.authError = '';
+      state.authNotice = 'Pendaftaran berhasil. Silakan masuk.';
+      state.view = 'login';
+      render();
+    });
+
+    const logoutBtn = $('#logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => {
+      if (state.timerHandle) clearInterval(state.timerHandle);
+      state.user = null; state.view = 'login'; state.authError=''; state.authNotice='';
+      render();
+    });
+
+    $$('[data-nav]').forEach(el => el.addEventListener('click', async () => {
+      const nav = el.getAttribute('data-nav');
+      if (state.user.role === 'admin') { state.view = 'admin'; }
+      else if (nav === 'results') {
+        state.resultsCache.mine = await pesertaResultsContentAsync();
+        state.view = 'pesertaResults';
+      } else { state.view = 'peserta'; }
+      render();
+    }));
+
+    // Admin: new exam
+    const newExamBtn = $('#new-exam-btn');
+    if (newExamBtn) newExamBtn.addEventListener('click', () => {
+      const title = prompt('Judul ujian:');
+      if (!title) return;
+      const durationStr = prompt('Durasi ujian (menit):', '30');
+      const duration = Math.max(1, parseInt(durationStr) || 30);
+      const description = prompt('Deskripsi singkat (opsional):', '') || '';
+      (async () => {
+        const id = uid();
+        const ex = { id, title, description, duration, questions: [], createdAt: Date.now() };
+        await sSet('exam:' + id, ex, true);
+        const list = await sGet('exams:list', true) || [];
+        list.push(id);
+        await saveExamList(list);
+        await loadExams();
+        render();
+      })();
+    });
+
+    $$('[data-edit-exam]').forEach(el => el.addEventListener('click', () => {
+      state.examEditId = el.getAttribute('data-edit-exam');
+      state.view = 'adminExam';
+      render();
+    }));
+
+    $$('[data-delete-exam]').forEach(el => el.addEventListener('click', () => {
+      const id = el.getAttribute('data-delete-exam');
+      if (!confirm('Hapus ujian ini beserta seluruh soalnya?')) return;
+      (async () => {
+        await sDelete('exam:' + id, true);
+        const list = (await sGet('exams:list', true) || []).filter(x => x !== id);
+        await saveExamList(list);
+        await loadExams();
+        render();
+      })();
+    }));
+
+    $$('[data-view-results]').forEach(el => el.addEventListener('click', async () => {
+      const id = el.getAttribute('data-view-results');
+      const slot = document.getElementById('results-panel-' + id);
+      if (!slot) return;
+      if (slot.dataset.open === '1') { slot.dataset.open = '0'; slot.innerHTML=''; return; }
+      slot.dataset.open = '1';
+      slot.innerHTML = '<div class="card"><p class="page-sub">Memuat nilai...</p></div>';
+      const list = await sGet('results:index', true) || [];
+      const rows = list.filter(r => r.examId === id).sort((a,b) => b.submittedAt - a.submittedAt);
+      slot.innerHTML = rows.length
+        ? `<div class="card"><table><thead><tr><th>Peserta</th><th>Nilai</th><th>Tanggal</th></tr></thead><tbody>
+            ${rows.map(r => `<tr><td>${escapeHtml(r.name)}</td><td><span class="badge ${r.score>=70?'badge-green':'badge-red'}">${r.score}/100</span></td><td>${fmtDate(r.submittedAt)}</td></tr>`).join('')}
+          </tbody></table></div>`
+        : `<div class="card"><p class="page-sub">Belum ada peserta yang mengerjakan ujian ini.</p></div>`;
+    }));
+
+    const backDash = $('#back-to-dash');
+    if (backDash) backDash.addEventListener('click', () => { state.view = 'admin'; render(); });
+
+    const addQForm = $('#add-question-form');
+    if (addQForm) addQForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const fd = new FormData(addQForm);
+      const q = {
+        id: uid(),
+        text: fd.get('text').trim(),
+        options: [fd.get('opt0'), fd.get('opt1'), fd.get('opt2'), fd.get('opt3')].map(s => s.trim()),
+        correct: parseInt(fd.get('correct'))
       };
-
-      daftarSoal.push(baru);
-      localStorage.setItem('lms_soal', JSON.stringify(daftarSoal));
-      alert('Soal berhasil disimpan!');
-      this.reset();
-      showPage('dashboard');
+      const ex = state.exams.find(e2 => e2.id === state.examEditId);
+      ex.questions = ex.questions || [];
+      ex.questions.push(q);
+      await sSet('exam:' + ex.id, ex, true);
+      await loadExams();
+      render();
     });
 
-    // Render Ujian (Siswa)
-    function renderUjian() {
-      const container = document.getElementById('kontainer-soal');
-      if (daftarSoal.length === 0) {
-        container.innerHTML = '<p class="text-gray-500">Belum ada soal tersedia.</p>';
-        return;
-      }
+    $$('[data-delete-q]').forEach(el => el.addEventListener('click', async () => {
+      const qid = el.getAttribute('data-delete-q');
+      const ex = state.exams.find(e2 => e2.id === state.examEditId);
+      ex.questions = (ex.questions||[]).filter(q => q.id !== qid);
+      await sSet('exam:' + ex.id, ex, true);
+      await loadExams();
+      render();
+    }));
 
-      container.innerHTML = daftarSoal.map((soal, idx) => `
-        <div class="bg-white p-6 rounded-lg shadow space-y-3">
-          <p class="font-semibold text-lg">${idx + 1}. ${soal.pertanyaan}</p>
-          <div class="space-y-2">
-            ${Object.entries(soal.pilihan).map(([key, text]) => `
-              <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 border cursor-pointer">
-                <input type="radio" name="soal_${soal.id}" value="${key}" class="w-4 h-4 text-blue-600">
-                <span><strong class="uppercase">${key}.</strong> ${text}</span>
-              </label>
-            `).join('')}
-          </div>
-        </div>
-      `).join('');
-
-      mulaiTimer(300); // Timer 5 menit
-    }
-
-    // Timer Ujian
-    function mulaiTimer(durasiDetik) {
-      clearInterval(timerInterval);
-      let sisa = durasiDetik;
-      const display = document.getElementById('timer');
-
-      timerInterval = setInterval(() => {
-        const menit = Math.floor(sisa / 60);
-        const detik = sisa % 60;
-        display.innerText = `${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}`;
-
-        if (--sisa < 0) {
-          clearInterval(timerInterval);
-          alert('Waktu telah habis!');
-          submitUjian();
-        }
+    // Peserta: take exam
+    $$('[data-take-exam]').forEach(el => el.addEventListener('click', () => {
+      const id = el.getAttribute('data-take-exam');
+      const ex = state.exams.find(e2 => e2.id === id);
+      state.examTakeId = id;
+      state.answers = {};
+      state.timeLeft = ex.duration * 60;
+      state.view = 'take';
+      render();
+      if (state.timerHandle) clearInterval(state.timerHandle);
+      state.timerHandle = setInterval(() => {
+        state.timeLeft -= 1;
+        const disp = document.getElementById('timer-display');
+        if (disp) disp.textContent = fmtTime(Math.max(0,state.timeLeft));
+        if (state.timeLeft <= 0) { clearInterval(state.timerHandle); submitExam(); }
       }, 1000);
-    }
+    }));
 
-    // Hitung Nilai Ujian
-    function submitUjian() {
-      clearInterval(timerInterval);
-      let benar = 0;
+    $$('[data-answer-q]').forEach(el => el.addEventListener('click', () => {
+      const q = el.getAttribute('data-answer-q');
+      const i = parseInt(el.getAttribute('data-answer-i'));
+      state.answers[q] = i;
+      render();
+    }));
 
-      daftarSoal.forEach(soal => {
-        const dipilih = document.querySelector(`input[name="soal_${soal.id}"]:checked`);
-        if (dipilih && dipilih.value === soal.kunci) {
-          benar++;
-        }
-      });
+    const submitBtn = $('#submit-exam-btn');
+    if (submitBtn) submitBtn.addEventListener('click', () => {
+      if (!confirm('Kumpulkan ujian sekarang?')) return;
+      if (state.timerHandle) clearInterval(state.timerHandle);
+      submitExam();
+    });
 
-      const total = daftarSoal.length;
-      const skor = total > 0 ? Math.round((benar / total) * 100) : 0;
+    const backList = $('#back-to-list-btn');
+    if (backList) backList.addEventListener('click', () => { state.view = 'peserta'; render(); });
+  }
 
-      document.getElementById('skor-akhir').innerText = skor;
-      document.getElementById('detail-jawaban').innerText = `Menjawab benar ${benar} dari ${total} soal.`;
-      showPage('hasil');
-    }
+  async function submitExam() {
+    const ex = state.exams.find(e => e.id === state.examTakeId);
+    const questions = ex.questions || [];
+    let correct = 0;
+    questions.forEach(q => { if (state.answers[q.id] === q.correct) correct++; });
+    const total = questions.length || 1;
+    const score = Math.round((correct/total) * 100);
+    const record = {
+      username: state.user.username, name: state.user.name, examId: ex.id, examTitle: ex.title,
+      score, correct, total, submittedAt: Date.now()
+    };
+    await sSet('result:' + state.user.username + ':' + ex.id, record, true);
+    const idx = await sGet('results:index', true) || [];
+    idx.push({ username: record.username, name: record.name, examId: record.examId, examTitle: record.examTitle, score, submittedAt: record.submittedAt });
+    await sSet('results:index', idx, true);
+    state.lastResult = record;
+    state.view = 'result';
+    render();
+  }
 
-    // Jalankan aplikasi pertama kali
-    initApp();
-  </script>
-</body>
-</html>
+  // ---------------- INIT ----------------
+  (async () => {
+    root.innerHTML = `<div class="auth-wrap"><p class="mono" style="color:#F7F4EC">Memuat...</p></div>`;
+    await seedAdmin();
+    render();
+  })();
+})();
+</script>
