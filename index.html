@@ -3,38 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LMS Ujian Online</title>
+  <title>LMS Ujian Online - System Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen text-gray-800">
 
   <!-- Navbar -->
-  <nav class="bg-blue-600 text-white p-4 shadow-md">
+  <nav id="navbar" class="bg-blue-600 text-white p-4 shadow-md hidden">
     <div class="max-w-5xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold">LMS Ujian Online</h1>
-      <div class="space-x-4">
+      <div class="flex items-center space-x-3">
+        <h1 class="text-xl font-bold">LMS Ujian</h1>
+        <span id="user-badge" class="bg-blue-800 text-xs px-2 py-1 rounded capitalize font-semibold"></span>
+      </div>
+      <div class="space-x-4 flex items-center">
         <button onclick="showPage('dashboard')" class="hover:underline">Dashboard</button>
-        <button onclick="showPage('buat-soal')" class="hover:underline">Buat Soal (Guru)</button>
-        <button onclick="showPage('mulai-ujian')" class="bg-white text-blue-600 px-3 py-1 rounded font-semibold hover:bg-gray-100">Ujian Siswa</button>
+        <button id="nav-buat-soal" onclick="showPage('buat-soal')" class="hover:underline hidden">Buat Soal (Guru)</button>
+        <button id="nav-mulai-ujian" onclick="showPage('mulai-ujian')" class="bg-white text-blue-600 px-3 py-1 rounded font-semibold hover:bg-gray-100 hidden">Ujian Siswa</button>
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold">Logout</button>
       </div>
     </div>
   </nav>
 
   <div class="max-w-5xl mx-auto p-6">
 
+    <!-- PAGE: LOGIN -->
+    <div id="page-login" class="page max-w-md mx-auto mt-12 bg-white p-8 rounded-lg shadow-md border">
+      <h2 class="text-2xl font-bold text-center mb-2">Login LMS Ujian</h2>
+      <p class="text-gray-500 text-center text-sm mb-6">Silakan masuk menggunakan akun Anda</p>
+      
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Username</label>
+          <input type="text" id="login-username" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan username" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input type="password" id="login-password" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan password" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Login Sebagai</label>
+          <select id="login-role" class="w-full p-2 border rounded bg-white">
+            <option value="siswa">Siswa</option>
+            <option value="guru">Guru / Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Masuk</button>
+      </form>
+
+      <div class="mt-6 p-4 bg-gray-50 rounded text-xs text-gray-600 border space-y-1">
+        <p class="font-bold">Akun Percobaan Default:</p>
+        <p>• <strong>Siswa:</strong> username: <code class="bg-gray-200 px-1">siswa</code> | pass: <code class="bg-gray-200 px-1">123</code></p>
+        <p>• <strong>Guru:</strong> username: <code class="bg-gray-200 px-1">guru</code> | pass: <code class="bg-gray-200 px-1">123</code></p>
+      </div>
+    </div>
+
     <!-- PAGE: DASHBOARD -->
-    <div id="page-dashboard" class="page">
-      <h2 class="text-2xl font-bold mb-4">Selamat Datang di Sistem Ujian</h2>
+    <div id="page-dashboard" class="page hidden">
+      <h2 class="text-2xl font-bold mb-1">Selamat Datang, <span id="dash-user-name" class="text-blue-600"></span>!</h2>
+      <p class="text-gray-600 mb-6">Role Anda: <strong id="dash-user-role" class="capitalize"></strong></p>
+      
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
           <h3 class="text-lg font-semibold mb-2">Total Soal Tersimpan</h3>
           <p id="total-soal" class="text-4xl font-bold text-blue-600">0</p>
-          <p class="text-sm text-gray-500 mt-2">Soal siap dikerjakan oleh siswa.</p>
+          <p class="text-sm text-gray-500 mt-2">Soal aktif dalam sistem ujian.</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-          <h3 class="text-lg font-semibold mb-2">Status Sistem</h3>
-          <p class="text-lg font-semibold text-green-600">Aktif & Siap Digunakan</p>
-          <p class="text-sm text-gray-500 mt-2">Soal disimpan secara lokal di browser Anda.</p>
+          <h3 class="text-lg font-semibold mb-2">Status Akun</h3>
+          <p class="text-lg font-semibold text-green-600">Sesi Login Aktif</p>
+          <p class="text-sm text-gray-500 mt-2">Akses menu disesuaikan dengan peran pengguna.</p>
         </div>
       </div>
     </div>
@@ -44,7 +81,7 @@
       <h2 class="text-2xl font-bold mb-4">Tambah Soal Baru</h2>
       <form id="form-soal" class="bg-white p-6 rounded-lg shadow space-y-4">
         <div>
-          <label class="block font-medium mb-1">Pertanyaan / Pertanyaan Ujian</label>
+          <label class="block font-medium mb-1">Pertanyaan / Soal Ujian</label>
           <textarea id="pertanyaan" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" rows="3" required></textarea>
         </div>
 
@@ -90,9 +127,7 @@
         </div>
       </div>
 
-      <div id="kontainer-soal" class="space-y-6">
-        <!-- Soal akan di-render menggunakan JavaScript -->
-      </div>
+      <div id="kontainer-soal" class="space-y-6"></div>
 
       <div class="mt-6">
         <button onclick="submitUjian()" class="bg-green-600 text-white px-6 py-2 rounded font-bold text-lg hover:bg-green-700">Kirim & Selesaikan Ujian</button>
@@ -102,8 +137,8 @@
     <!-- PAGE: HASIL UJIAN -->
     <div id="page-hasil" class="page hidden text-center">
       <div class="bg-white p-8 rounded-lg shadow max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-2">Hasil Ujian Anda</h2>
-        <p class="text-gray-600 mb-6">Nilai berhasil dihitung otomatis</p>
+        <h2 class="text-2xl font-bold mb-2">Hasil Ujian</h2>
+        <p class="text-gray-600 mb-6">Nilai Anda telah dikalkulasi:</p>
         <div id="skor-akhir" class="text-6xl font-extrabold text-blue-600 mb-4">0</div>
         <p id="detail-jawaban" class="text-sm text-gray-500 mb-6"></p>
         <button onclick="showPage('dashboard')" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Kembali ke Dashboard</button>
@@ -113,7 +148,8 @@
   </div>
 
   <script>
-    // State aplikasi & localStorage
+    // State Aplikasi
+    let currentUser = JSON.parse(localStorage.getItem('lms_current_user')) || null;
     let daftarSoal = JSON.parse(localStorage.getItem('lms_soal')) || [
       {
         id: 1,
@@ -125,7 +161,61 @@
 
     let timerInterval = null;
 
-    // Fungsi Navigasi Halaman
+    // Login System
+    document.getElementById('form-login').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('login-username').value;
+      const passwordInput = document.getElementById('login-password').value;
+      const roleInput = document.getElementById('login-role').value;
+
+      // Validasi sederhana kredensial
+      if (roleInput === 'siswa' && usernameInput === 'siswa' && passwordInput === '123') {
+        currentUser = { username: 'siswa', role: 'siswa', name: 'Siswa Percobaan' };
+      } else if (roleInput === 'guru' && usernameInput === 'guru' && passwordInput === '123') {
+        currentUser = { username: 'guru', role: 'guru', name: 'Pak Guru' };
+      } else {
+        alert('Username atau password salah! (Gunakan default: siswa/123 atau guru/123)');
+        return;
+      }
+
+      localStorage.setItem('lms_current_user', JSON.stringify(currentUser));
+      initApp();
+      showPage('dashboard');
+    });
+
+    function logout() {
+      localStorage.removeItem('lms_current_user');
+      currentUser = null;
+      clearInterval(timerInterval);
+      initApp();
+    }
+
+    // Inisialisasi UI Berdasarkan Sesi Login
+    function initApp() {
+      const navbar = document.getElementById('navbar');
+      if (!currentUser) {
+        navbar.classList.add('hidden');
+        showPage('login');
+      } else {
+        navbar.classList.remove('hidden');
+        document.getElementById('user-badge').innerText = currentUser.role;
+        document.getElementById('dash-user-name').innerText = currentUser.name;
+        document.getElementById('dash-user-role').innerText = currentUser.role;
+
+        // Navigasi Berdasarkan Role
+        if (currentUser.role === 'guru') {
+          document.getElementById('nav-buat-soal').classList.remove('hidden');
+          document.getElementById('nav-mulai-ujian').classList.add('hidden');
+        } else {
+          document.getElementById('nav-buat-soal').classList.add('hidden');
+          document.getElementById('nav-mulai-ujian').classList.remove('hidden');
+        }
+
+        showPage('dashboard');
+      }
+    }
+
+    // Navigasi Halaman
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
       document.getElementById(`page-${pageId}`).classList.remove('hidden');
@@ -138,7 +228,7 @@
       document.getElementById('total-soal').innerText = daftarSoal.length;
     }
 
-    // Buat Soal
+    // Buat Soal Baru (Guru)
     document.getElementById('form-soal').addEventListener('submit', function(e) {
       e.preventDefault();
       const baru = {
@@ -160,11 +250,11 @@
       showPage('dashboard');
     });
 
-    // Render Soal Ujian
+    // Render Ujian (Siswa)
     function renderUjian() {
       const container = document.getElementById('kontainer-soal');
       if (daftarSoal.length === 0) {
-        container.innerHTML = '<p class="text-gray-500">Belum ada soal tersedia. Tambahkan soal terlebih dahulu melalui menu Guru.</p>';
+        container.innerHTML = '<p class="text-gray-500">Belum ada soal tersedia.</p>';
         return;
       }
 
@@ -182,7 +272,7 @@
         </div>
       `).join('');
 
-      mulaiTimer(300); // 5 menit
+      mulaiTimer(300); // Timer 5 menit
     }
 
     // Timer Ujian
@@ -198,13 +288,13 @@
 
         if (--sisa < 0) {
           clearInterval(timerInterval);
-          alert('Waktu habis!');
+          alert('Waktu telah habis!');
           submitUjian();
         }
       }, 1000);
     }
 
-    // Kalkulasi Skor
+    // Hitung Nilai Ujian
     function submitUjian() {
       clearInterval(timerInterval);
       let benar = 0;
@@ -224,8 +314,8 @@
       showPage('hasil');
     }
 
-    // Inisialisasi
-    updateDashboard();
+    // Jalankan aplikasi pertama kali
+    initApp();
   </script>
 </body>
 </html>
