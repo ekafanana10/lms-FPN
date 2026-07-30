@@ -189,6 +189,7 @@
     view: 'login',
     authError: '',
     authNotice: '',
+    storageError: '',
     exams: [],
     examEditId: null,
     examTakeId: null,
@@ -203,21 +204,39 @@
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
   async function sGet(key, shared) {
-    try { const r = await window.storage.get(key, !!shared); return r ? JSON.parse(r.value) : null; }
-    catch(e) { return null; }
+    try {
+      if (!window.storage || typeof window.storage.get !== 'function') throw new Error('window.storage tidak tersedia di lingkungan ini');
+      const r = await window.storage.get(key, !!shared);
+      return r ? JSON.parse(r.value) : null;
+    }
+    catch(e) { console.error('sGet failed for', key, e); return null; }
   }
   async function sSet(key, val, shared) {
-    try { await window.storage.set(key, JSON.stringify(val), !!shared); return true; }
-    catch(e) { return false; }
+    try {
+      if (!window.storage || typeof window.storage.set !== 'function') throw new Error('window.storage tidak tersedia di lingkungan ini');
+      const r = await window.storage.set(key, JSON.stringify(val), !!shared);
+      if (!r) throw new Error('storage.set mengembalikan hasil kosong (gagal tersimpan)');
+      return true;
+    }
+    catch(e) { console.error('sSet failed for', key, e); state.storageError = e.message || String(e); return false; }
   }
   async function sDelete(key, shared) {
-    try { await window.storage.delete(key, !!shared); } catch(e) {}
+    try { await window.storage.delete(key, !!shared); } catch(e) { console.error('sDelete failed for', key, e); }
   }
 
   async function seedAdmin() {
-    const existing = await sGet('user:admin', true);
-    if (!existing) {
-      await sSet('user:admin', { username: 'admin', password: 'admin123', name: 'Administrator', role: 'admin' }, true);
+    try {
+      const existing = await sGet('user:admin', true);
+      if (existing) return;
+      const ok = await sSet('user:admin', { username: 'admin', password: 'admin123', name: 'Administrator', role: 'admin' }, true);
+      if (!ok) return;
+      const check = await sGet('user:admin', true);
+      if (!check) {
+        state.storageError = 'Akun admin tersimpan tetapi gagal dibaca kembali. Penyimpanan mungkin tidak berfungsi di lingkungan ini.';
+      }
+    } catch (e) {
+      console.error('seedAdmin failed', e);
+      state.storageError = e.message || String(e);
     }
   }
 
@@ -265,6 +284,7 @@
             <div class="eyebrow">LMS Ujian PVN</div>
             <h1 class="auth-title">Masuk ke Akun</h1>
             <p class="auth-sub">Masukkan kredensial untuk mengakses ruang ujian atau panel admin.</p>
+            ${state.storageError ? `<div class="banner banner-err">Masalah penyimpanan: ${escapeHtml(state.storageError)}</div>` : ''}
             ${state.authError ? `<div class="banner banner-err">${escapeHtml(state.authError)}</div>` : ''}
             ${state.authNotice ? `<div class="banner banner-ok">${escapeHtml(state.authNotice)}</div>` : ''}
             <form id="login-form">
@@ -479,11 +499,17 @@
       const username = fd.get('username').trim();
       const password = fd.get('password');
       const u = await sGet('user:' + username, true);
-      if (!u || u.password !== password) {
+      if (!u) {
+        state.authError = state.storageError
+          ? 'Tidak dapat memeriksa akun karena masalah penyimpanan (lihat pesan di atas).'
+          : 'Username atau kata sandi salah.';
+        render(); return;
+      }
+      if (u.password !== password) {
         state.authError = 'Username atau kata sandi salah.';
         render(); return;
       }
-      state.authError = ''; state.authNotice = '';
+      state.authError = ''; state.authNotice = ''; state.storageError = '';
       state.user = u;
       await loadExams();
       state.view = u.role === 'admin' ? 'admin' : 'peserta';
