@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMS Ujian Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold">LMS Ujian Online</h1>
+      <div class="space-x-4">
+        <button onclick="showPage('dashboard')" class="hover:underline">Dashboard</button>
+        <button onclick="showPage('buat-soal')" class="hover:underline">Buat Soal (Guru)</button>
+        <button onclick="showPage('mulai-ujian')" class="bg-white text-blue-600 px-3 py-1 rounded font-semibold hover:bg-gray-100">Ujian Siswa</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-5xl mx-auto p-6">
+
+    <!-- PAGE: DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <h2 class="text-2xl font-bold mb-4">Selamat Datang di Sistem Ujian</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+          <h3 class="text-lg font-semibold mb-2">Total Soal Tersimpan</h3>
+          <p id="total-soal" class="text-4xl font-bold text-blue-600">0</p>
+          <p class="text-sm text-gray-500 mt-2">Soal siap dikerjakan oleh siswa.</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+          <h3 class="text-lg font-semibold mb-2">Status Sistem</h3>
+          <p class="text-lg font-semibold text-green-600">Aktif & Siap Digunakan</p>
+          <p class="text-sm text-gray-500 mt-2">Soal disimpan secara lokal di browser Anda.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: BUAT SOAL (GURU) -->
+    <div id="page-buat-soal" class="page hidden">
+      <h2 class="text-2xl font-bold mb-4">Tambah Soal Baru</h2>
+      <form id="form-soal" class="bg-white p-6 rounded-lg shadow space-y-4">
+        <div>
+          <label class="block font-medium mb-1">Pertanyaan / Pertanyaan Ujian</label>
+          <textarea id="pertanyaan" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" rows="3" required></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Pilihan A</label>
+            <input type="text" id="opt-a" class="w-full p-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Pilihan B</label>
+            <input type="text" id="opt-b" class="w-full p-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Pilihan C</label>
+            <input type="text" id="opt-c" class="w-full p-2 border rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Pilihan D</label>
+            <input type="text" id="opt-d" class="w-full p-2 border rounded" required>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium mb-1">Kunci Jawaban Benar</label>
+          <select id="kunci-jawaban" class="w-full p-2 border rounded">
+            <option value="A">Pilihan A</option>
+            <option value="B">Pilihan B</option>
+            <option value="C">Pilihan C</option>
+            <option value="D">Pilihan D</option>
+          </select>
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Simpan Soal</button>
+      </form>
+    </div>
+
+    <!-- PAGE: UJIAN (SISWA) -->
+    <div id="page-mulai-ujian" class="page hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Lembar Ujian</h2>
+        <div class="bg-red-100 text-red-600 px-4 py-2 rounded font-bold border border-red-300">
+          Waktu: <span id="timer">05:00</span>
+        </div>
+      </div>
+
+      <div id="kontainer-soal" class="space-y-6">
+        <!-- Soal akan di-render menggunakan JavaScript -->
+      </div>
+
+      <div class="mt-6">
+        <button onclick="submitUjian()" class="bg-green-600 text-white px-6 py-2 rounded font-bold text-lg hover:bg-green-700">Kirim & Selesaikan Ujian</button>
+      </div>
+    </div>
+
+    <!-- PAGE: HASIL UJIAN -->
+    <div id="page-hasil" class="page hidden text-center">
+      <div class="bg-white p-8 rounded-lg shadow max-w-md mx-auto">
+        <h2 class="text-2xl font-bold mb-2">Hasil Ujian Anda</h2>
+        <p class="text-gray-600 mb-6">Nilai berhasil dihitung otomatis</p>
+        <div id="skor-akhir" class="text-6xl font-extrabold text-blue-600 mb-4">0</div>
+        <p id="detail-jawaban" class="text-sm text-gray-500 mb-6"></p>
+        <button onclick="showPage('dashboard')" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Kembali ke Dashboard</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State aplikasi & localStorage
+    let daftarSoal = JSON.parse(localStorage.getItem('lms_soal')) || [
+      {
+        id: 1,
+        pertanyaan: "Apa kepanjangan dari HTML?",
+        pilihan: { A: "HyperText Markup Language", B: "HighText Machine Language", C: "Hyperlink Text Mode Language", D: "Home Tool Markup Language" },
+        kunci: "A"
+      }
+    ];
+
+    let timerInterval = null;
+
+    // Fungsi Navigasi Halaman
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+      if (pageId === 'dashboard') updateDashboard();
+      if (pageId === 'mulai-ujian') renderUjian();
+    }
+
+    function updateDashboard() {
+      document.getElementById('total-soal').innerText = daftarSoal.length;
+    }
+
+    // Buat Soal
+    document.getElementById('form-soal').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const baru = {
+        id: Date.now(),
+        pertanyaan: document.getElementById('pertanyaan').value,
+        pilihan: {
+          A: document.getElementById('opt-a').value,
+          B: document.getElementById('opt-b').value,
+          C: document.getElementById('opt-c').value,
+          D: document.getElementById('opt-d').value
+        },
+        kunci: document.getElementById('kunci-jawaban').value
+      };
+
+      daftarSoal.push(baru);
+      localStorage.setItem('lms_soal', JSON.stringify(daftarSoal));
+      alert('Soal berhasil disimpan!');
+      this.reset();
+      showPage('dashboard');
+    });
+
+    // Render Soal Ujian
+    function renderUjian() {
+      const container = document.getElementById('kontainer-soal');
+      if (daftarSoal.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">Belum ada soal tersedia. Tambahkan soal terlebih dahulu melalui menu Guru.</p>';
+        return;
+      }
+
+      container.innerHTML = daftarSoal.map((soal, idx) => `
+        <div class="bg-white p-6 rounded-lg shadow space-y-3">
+          <p class="font-semibold text-lg">${idx + 1}. ${soal.pertanyaan}</p>
+          <div class="space-y-2">
+            ${Object.entries(soal.pilihan).map(([key, text]) => `
+              <label class="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 border cursor-pointer">
+                <input type="radio" name="soal_${soal.id}" value="${key}" class="w-4 h-4 text-blue-600">
+                <span><strong class="uppercase">${key}.</strong> ${text}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      mulaiTimer(300); // 5 menit
+    }
+
+    // Timer Ujian
+    function mulaiTimer(durasiDetik) {
+      clearInterval(timerInterval);
+      let sisa = durasiDetik;
+      const display = document.getElementById('timer');
+
+      timerInterval = setInterval(() => {
+        const menit = Math.floor(sisa / 60);
+        const detik = sisa % 60;
+        display.innerText = `${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}`;
+
+        if (--sisa < 0) {
+          clearInterval(timerInterval);
+          alert('Waktu habis!');
+          submitUjian();
+        }
+      }, 1000);
+    }
+
+    // Kalkulasi Skor
+    function submitUjian() {
+      clearInterval(timerInterval);
+      let benar = 0;
+
+      daftarSoal.forEach(soal => {
+        const dipilih = document.querySelector(`input[name="soal_${soal.id}"]:checked`);
+        if (dipilih && dipilih.value === soal.kunci) {
+          benar++;
+        }
+      });
+
+      const total = daftarSoal.length;
+      const skor = total > 0 ? Math.round((benar / total) * 100) : 0;
+
+      document.getElementById('skor-akhir').innerText = skor;
+      document.getElementById('detail-jawaban').innerText = `Menjawab benar ${benar} dari ${total} soal.`;
+      showPage('hasil');
+    }
+
+    // Inisialisasi
+    updateDashboard();
+  </script>
+</body>
+</html>
